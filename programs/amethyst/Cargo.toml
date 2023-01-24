@@ -1,0 +1,23 @@
+[package]
+name = "amethyst"
+version = "0.1.0"
+description = "Zero slippage, zero price impact trading."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "amethyst"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.26.0"
+anchor-spl = { version = "0.26.0", features = [ "token", ] }
+
+jet-proto-proc-macros = { git = "https://github.com/jet-lab/program-libraries.git" }
+static_assertions = "1.1.0"
