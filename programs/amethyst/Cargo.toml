@@ -16,8 +16,10 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.26.0"
+anchor-lang = { version = "0.26.0", features = [ "init-if-needed" ] }
 anchor-spl = { version = "0.26.0", features = [ "token", ] }
 
 jet-proto-proc-macros = { git = "https://github.com/jet-lab/program-libraries.git" }
+pyth-sdk-solana = "0.7.0"
 static_assertions = "1.1.0"
+switchboard-v2 = "0.1.18"

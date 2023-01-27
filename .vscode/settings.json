@@ -1,0 +1,13 @@
+{
+    "rust-analyzer.server.extraEnv": {
+        "RUSTUP_TOOLCHAIN": "1.65.0-aarch64-apple-darwin"
+    },
+    "[rust]": {
+        "editor.formatOnSave": true
+    },
+    "rust-analyzer.linkedProjects": [
+        "cli/Cargo.toml",
+        "programs/amethyst/Cargo.toml",
+        "clients/rust/amethyst-client/Cargo.toml",
+    ],
+}

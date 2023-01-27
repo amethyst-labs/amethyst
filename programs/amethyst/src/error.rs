@@ -21,11 +21,17 @@ pub enum ErrorCode {
     #[msg("The resulting average price is invalid.")]
     InvalidAveragePrice,
 
+    #[msg("The given size delta is invalid.")]
+    InvalidSizeDelta,
+
     #[msg("The given vault does not have sufficient liquidity to enter the desired position.")]
     InsufficientLiquidityToEnterPosition,
 
     #[msg("The given vault does not have sufficient liquidity to performt the swap.")]
     InsufficientLiquidityForSwap,
+
+    #[msg("The position does not have sufficient collateral to pay fees.")]
+    InsufficientCollateralForFee,
 
     #[msg("The given vault has deposited assets.")]
     CannotCloseVaultWithDepositedAssets,
@@ -35,4 +41,7 @@ pub enum ErrorCode {
 
     #[msg("The position's leverage would exceed the maximum leverage allowed.")]
     PositionLeverageExceedsLimit,
+
+    #[msg("The given oracle price feed is stale.")]
+    StaleOracleFeed,
 }

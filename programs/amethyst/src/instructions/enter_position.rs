@@ -5,7 +5,7 @@ use anchor_spl::token::{Mint, Token, TokenAccount};
 
 use crate::{
     args::EnterPositionArgs,
-    constants::{B_ESCROW, B_POSITION},
+    constants::B_POSITION,
     contexts::{impl_change_position_ctx, ChangePositionContext},
     error::ErrorCode,
     state::{
@@ -58,27 +58,6 @@ pub struct EnterPosition<'info> {
     )]
     pub position: Box<Account<'info, Position>>,
 
-    /// The escrow of the position.
-    /// CHECK: The escrow PDA for the position.
-    #[account(
-        seeds = [
-            B_ESCROW,
-            position.key().as_ref(),
-            token_mint.key().as_ref()
-        ],
-        bump = position.escrow_bump_seed[0]
-    )]
-    pub escrow: AccountInfo<'info>,
-
-    /// The position's token account.
-    #[account(
-        init,
-        payer = payer,
-        token::mint = token_mint,
-        token::authority = escrow
-    )]
-    pub position_vault: Box<Account<'info, TokenAccount>>,
-
     /// The user's token account.
     #[account(
         mut,
@@ -113,7 +92,7 @@ impl<'info> EnterPosition<'info> {
             .checked_sub(self.vault.reserved)
             .unwrap();
         require!(
-            available_liquidity < amount,
+            available_liquidity < amount.into(),
             ErrorCode::InsufficientLiquidityToEnterPosition
         );
         Ok(())
@@ -127,7 +106,6 @@ impl<'info> EnterPosition<'info> {
         let reserved = args.size.checked_sub(args.collateral).unwrap();
 
         self.deposit_collateral(args.collateral)?;
-        self.increase_size(reserved)?;
 
         let position = &mut self.position;
         let vault = &mut self.vault;
@@ -146,7 +124,7 @@ impl<'info> EnterPosition<'info> {
             Direction::Short => vault_cache.get_next_short_average_entry_price(args.size),
         };
 
-        vault.increase_reserved(reserved);
+        vault.increase_reserved(reserved.into());
 
         Ok(())
     }

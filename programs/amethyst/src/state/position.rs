@@ -3,21 +3,7 @@ use jet_proto_proc_macros::assert_size;
 
 use crate::constants::BASIS_POINTS_DIVISOR;
 
-#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-pub enum PositionValueChange {
-    /// Increase a value.
-    Increase(u64),
-    /// Decrease a value.
-    Decrease(u64),
-}
-
-impl Default for PositionValueChange {
-    fn default() -> Self {
-        Self::Increase(0)
-    }
-}
-
-#[derive(Debug, AnchorSerialize, AnchorDeserialize)]
+#[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, Copy)]
 pub enum Direction {
     /// A long position where the collateral and underlying represent an asset.
     Long,
@@ -37,7 +23,9 @@ impl Default for Direction {
 pub struct Position {
     /// The escrow bump seed.
     pub escrow_bump_seed: [u8; 1], // 1
-    padding: [u8; 15], // 16
+    /// The direction of the position.
+    pub direction: Direction, // 2
+    padding: [u8; 14], // 16
 
     pub self_address: Pubkey, // 48
     /// The position authority.
@@ -55,7 +43,8 @@ pub struct Position {
     pub last_funding_index: u64, // 144
     /// The timestamp of the last funding payment.
     pub last_funding_payment: u64, // 152
-    padding2: [u64; 1], // 128
+    /// The amount of reserved tokens for this position.
+    pub reserved_amount: u64, // 160
 }
 
 impl Position {

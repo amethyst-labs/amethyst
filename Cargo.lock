@@ -65,8 +65,18 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "jet-proto-proc-macros",
+ "pyth-sdk-solana",
  "static_assertions",
+ "switchboard-v2",
 ]
+
+[[package]]
+name = "amethyst-cli"
+version = "0.1.0"
+
+[[package]]
+name = "amethyst-client"
+version = "0.1.0"
 
 [[package]]
 name = "anchor-attribute-access-control"
@@ -654,6 +664,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dyn-clone"
+version = "1.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c9b0705efd4599c15a38151f4721f7bc388306f61084d3bfd50bd07fbca5cb60"
+
+[[package]]
 name = "ed25519"
 version = "1.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -799,6 +815,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee512640fe35acbfb4bb779db6f0d80704c2cacfa2e39b601ef3e3f47d1ae4c7"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -1220,6 +1245,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "pyth-sdk"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00bf2540203ca3c7a5712fdb8b5897534b7f6a0b6e7b0923ff00466c5f9efcb3"
+dependencies = [
+ "borsh",
+ "borsh-derive",
+ "hex",
+ "schemars",
+ "serde",
+]
+
+[[package]]
+name = "pyth-sdk-solana"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c637b4d8e9558e596a13cd5a11e406431c80eed4fbed01e4b1ff474257b04db9"
+dependencies = [
+ "borsh",
+ "borsh-derive",
+ "bytemuck",
+ "num-derive",
+ "num-traits",
+ "pyth-sdk",
+ "serde",
+ "solana-program",
+ "thiserror",
+]
+
+[[package]]
 name = "qstring"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1345,6 +1400,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 
 [[package]]
+name = "rust_decimal"
+version = "1.26.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee9164faf726e4f3ece4978b25ca877ddc6802fa77f38cdccb32c7f805ecd70c"
+dependencies = [
+ "arrayvec",
+ "num-traits",
+ "serde",
+]
+
+[[package]]
 name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1370,6 +1436,30 @@ name = "ryu"
 version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b4b9743ed687d4b4bcedf9ff5eaa7398495ae14e61cba0a295704edbc7decde"
+
+[[package]]
+name = "schemars"
+version = "0.8.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a5fb6c61f29e723026dc8e923d94c694313212abbecbbe5f55a7748eec5b307"
+dependencies = [
+ "dyn-clone",
+ "schemars_derive",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "schemars_derive"
+version = "0.8.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f188d036977451159430f3b8dc82ec76364a42b7e289c2b18a9a18f4470058e9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde_derive_internals",
+ "syn",
+]
 
 [[package]]
 name = "scopeguard"
@@ -1406,6 +1496,17 @@ name = "serde_derive"
 version = "1.0.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af487d118eecd09402d70a5d72551860e788df87b464af30e5ea6a38c75c541e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "serde_derive_internals"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85bf8229e7920a9f636479437026331ce11aa132b4dde37d121944a44d6e5f3c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1761,6 +1862,27 @@ name = "subtle"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
+
+[[package]]
+name = "superslice"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab16ced94dbd8a46c82fd81e3ed9a8727dac2977ea869d217bcc4ea1f122e81f"
+
+[[package]]
+name = "switchboard-v2"
+version = "0.1.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bcfe32aee48f4e3a2639d9defcf33c69f0c7cacfff6adcb27c6970187cec0d4a"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "bytemuck",
+ "rust_decimal",
+ "solana-program",
+ "spl-token",
+ "superslice",
+]
 
 [[package]]
 name = "syn"

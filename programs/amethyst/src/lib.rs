@@ -19,20 +19,6 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 pub mod amethyst {
     use super::*;
 
-    pub fn change_position_collateral(
-        ctx: Context<ChangePositionCollateral>,
-        value_change: PositionValueChange,
-    ) -> Result<()> {
-        instructions::change_position_collateral::handler(ctx, value_change)
-    }
-
-    pub fn change_position_size(
-        ctx: Context<ChangePositionSize>,
-        value_change: PositionValueChange,
-    ) -> Result<()> {
-        instructions::change_position_size::handler(ctx, value_change)
-    }
-
     pub fn close_global_cache(ctx: Context<CloseGlobalCache>) -> Result<()> {
         instructions::close_global_cache::handler(ctx)
     }
@@ -53,8 +39,16 @@ pub mod amethyst {
         instructions::close_vault::handler(ctx)
     }
 
+    pub fn decrease_position(ctx: Context<DecreasePosition>, size_delta: u64) -> Result<()> {
+        instructions::decrease_position::handler(ctx, size_delta)
+    }
+
     pub fn enter_position(ctx: Context<EnterPosition>, args: EnterPositionArgs) -> Result<()> {
         instructions::enter_position::handler(ctx, args)
+    }
+
+    pub fn increase_position(ctx: Context<IncreasePosition>, size_delta: u64) -> Result<()> {
+        instructions::increase_position::handler(ctx, size_delta)
     }
 
     pub fn liquidate_position(ctx: Context<LiquidatePosition>) -> Result<()> {

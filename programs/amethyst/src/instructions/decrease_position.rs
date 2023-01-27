@@ -1,18 +1,10 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
+use anchor_spl::token::{TokenAccount, Mint, Token};
 
-use crate::{
-    constants::B_ESCROW,
-    contexts::{impl_change_position_ctx, ChangePositionContext},
-    error::ErrorCode,
-    state::{
-        position::{Position, PositionValueChange},
-        vault::{Vault, VaultCache},
-    },
-};
+use crate::{state::{position::Position, Vault, VaultCache}, constants::B_ESCROW, error::ErrorCode};
 
 #[derive(Accounts)]
-pub struct ChangePositionSize<'info> {
+pub struct DecreasePosition<'info> {
     /// The vault's cache.
     #[account(
         mut,
@@ -89,23 +81,18 @@ pub struct ChangePositionSize<'info> {
     pub token_program: Program<'info, Token>,
 }
 
-impl<'info> ChangePositionSize<'info> {
-    /// Perform validation.
-    ///
-    ///
+impl<'info> DecreasePosition<'info> {
     fn validate(&self) -> Result<()> {
         Ok(())
     }
 
-    /// Change the position's size.
-    ///
-    ///
-    fn change_position_size(&self, value_change: PositionValueChange) -> Result<()> {
-        match value_change {
-            PositionValueChange::Increase(amount) => self.increase_size(amount),
-            PositionValueChange::Decrease(amount) => self.decrease_size(amount),
-        }
+    fn process(&self, size: u64) -> Result<()> {
+
+        
+
+        Ok(())
     }
+
 
     /// Perform validation after performing an action.
     ///
@@ -121,12 +108,9 @@ impl<'info> ChangePositionSize<'info> {
     }
 }
 
-/// Change the position size, this also counts as realising profits or losses.
-pub fn handler(ctx: Context<ChangePositionSize>, value_change: PositionValueChange) -> Result<()> {
+pub fn handler(ctx: Context<DecreasePosition>, size: u64) -> Result<()> {
     ctx.accounts.validate()?;
-    ctx.accounts.change_position_size(value_change)?;
+    ctx.accounts.process(size)?;
     ctx.accounts.post_validation()?;
     Ok(())
 }
-
-impl_change_position_ctx! { ChangePositionSize<'info> }

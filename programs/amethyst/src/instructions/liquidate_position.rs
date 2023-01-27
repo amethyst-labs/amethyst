@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
@@ -81,10 +83,17 @@ impl<'info> LiquidatePosition<'info> {
     fn validate(&self) -> Result<()> {
         Ok(())
     }
+
+    /// Perform the liquidation.
+    fn process(&self) -> Result<()> {
+
+        Ok(())
+    }
 }
 
 /// When we liquidate a position, we transfer the collateral into the vault.
 pub fn handler(ctx: Context<LiquidatePosition>) -> Result<()> {
     ctx.accounts.validate()?;
+    ctx.accounts.process()?;
     Ok(())
 }

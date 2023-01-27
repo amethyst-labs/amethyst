@@ -15,3 +15,19 @@ pub struct PositionOpened {
     /// The direction of the position.
     pub direction: Direction,
 }
+
+#[event]
+pub struct PositionIncreased {
+    /// The position itself.
+    pub position: Pubkey,
+    /// The authority of the position.
+    pub authority: Pubkey,
+    /// The size delta.
+    pub size_delta: u128,
+    /// The collateral delta.
+    pub collateral_delta_usd: u128,
+    /// The fee paid.
+    pub fee: u128,
+    /// The oracle price.
+    pub price: u64,
+}

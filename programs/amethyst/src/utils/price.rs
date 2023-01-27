@@ -1,12 +1,7 @@
-use crate::error::ErrorCode;
-use anchor_lang::prelude::*;
 use std::ops::Add;
 
-pub fn with_signer_pda<'info, T: ToAccountInfo<'info>>(acc_info: &T) -> AccountInfo<'info> {
-    let mut acc_info = acc_info.to_account_info();
-    acc_info.is_signer = true;
-    acc_info
-}
+use crate::error::ErrorCode;
+use anchor_lang::prelude::*;
 
 pub fn get_next_average_price(
     current_position_size: u128,
@@ -23,4 +18,20 @@ pub fn get_next_average_price(
     avg_price
         .try_into()
         .or(Err(ErrorCode::InvalidAveragePrice.into()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    pub fn test_get_next_average_price() -> Result<()> {
+        let current_size = 3;
+        let current_average_price = 9_666_670_000;
+        let current_price = 11_000_000_000;
+        let next_average_price =
+            get_next_average_price(current_size, current_average_price, 2, current_price)?;
+        assert_eq!(next_average_price, 10_200_002_000);
+        Ok(())
+    }
 }

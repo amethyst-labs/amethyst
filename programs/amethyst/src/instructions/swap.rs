@@ -101,9 +101,18 @@ impl<'info> Swap<'info> {
             .checked_sub(self.vault_b.reserved)
             .unwrap();
         require!(
-            available_liquidity > min_amount_out,
+            available_liquidity > min_amount_out.into(),
             ErrorCode::InsufficientLiquidityForSwap
         );
+        Ok(())
+    }
+
+    /// Swap the assets.
+    /// 
+    /// In order to do this we have to calculate the swap fee and the tax amount
+    /// according to whether this swap improves or not the balances of each asset.
+    fn process(&self) -> Result<()> {
+
         Ok(())
     }
 }
