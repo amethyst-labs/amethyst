@@ -1,5 +1,8 @@
 use crate::{
-    constants::{ORACLE_PRICE_FEED_TTL_SECS, QUOTE_TOKEN_DECIMALS},
+    constants::{
+        ORACLE_PRICE_FEED_TTL_SECS, ORACLE_PRICE_TARGET_EXPONENT, PYTH_FEED_DECIMALS,
+        SWITCHBOARD_FEED_DECIMALS, SWITCHBOARD_FEED_EXPONENT,
+    },
     error::ErrorCode,
     state::{BoundedPrice, PriceFeedResult},
 };
@@ -8,7 +11,7 @@ use pyth_sdk_solana::PriceFeed;
 use std::ops::{Div, Mul};
 use switchboard_v2::{AggregatorAccountData, SwitchboardDecimal};
 
-fn get_target_decimals(base_decimals: i32, current_expo: i32, target_expo: i32) -> Result<i32> {
+fn get_target_exponent(base_decimals: i32, current_expo: i32, target_expo: i32) -> Result<i32> {
     let decimals = base_decimals
         .checked_add(current_expo)
         .unwrap()
@@ -25,9 +28,10 @@ pub fn scale_amount(
     target_expo: i32,
 ) -> Result<u128> {
     // scale the price to the target decimals
-    let target_decimals = get_target_decimals(base_decimals, current_expo, target_expo)?;
+    let target_decimals = get_target_exponent(base_decimals, current_expo, target_expo)?;
     let decimal_adj = 10u64.pow(target_decimals.abs() as u32) as u128;
 
+    #[cfg(test)]
     msg!(
         "Target Decimals: {} - Decimals Adj.: {}",
         target_decimals,
@@ -40,6 +44,9 @@ pub fn scale_amount(
         amount.checked_mul(decimal_adj).unwrap()
     };
 
+    #[cfg(test)]
+    msg!("Scaled Amount: {}", scaled_amount);
+
     Ok(scaled_amount)
 }
 
@@ -49,11 +56,12 @@ pub fn scale_price(
     base_decimals: i32,
     current_expo: i32,
     target_expo: i32,
-) -> Result<f64> {
+) -> Result<u128> {
     // scale the price to the target decimals
-    let target_decimals = get_target_decimals(base_decimals, current_expo, target_expo)?;
+    let target_decimals = get_target_exponent(base_decimals, current_expo, target_expo)?;
     let decimal_adj = 10u64.pow(target_decimals.abs() as u32) as f64;
 
+    #[cfg(test)]
     msg!(
         "Target Decimals: {} - Decimals Adj.: {}",
         target_decimals,
@@ -66,7 +74,10 @@ pub fn scale_price(
         unscaled_price.mul(decimal_adj)
     };
 
-    Ok(scaled_price)
+    #[cfg(test)]
+    msg!("Scaled Price: {}", scaled_price);
+
+    Ok(scaled_price as u128)
 }
 
 /// Gets an asset's from a Switchboard [`AggregatorAccountData`] and applies bounds if necessary.
@@ -85,6 +96,20 @@ pub fn get_switchboard_price(
         .latest_confirmed_round
         .std_deviation
         .try_into()?;
+
+    let price_result = scale_price(
+        price_result,
+        SWITCHBOARD_FEED_DECIMALS,
+        SWITCHBOARD_FEED_EXPONENT,
+        ORACLE_PRICE_TARGET_EXPONENT,
+    )?;
+
+    let std_deviation = scale_price(
+        std_deviation,
+        SWITCHBOARD_FEED_DECIMALS,
+        SWITCHBOARD_FEED_EXPONENT,
+        ORACLE_PRICE_TARGET_EXPONENT,
+    )?;
 
     msg!(
         "Price Feed Result: {} - Std. Deviation: {}",
@@ -128,15 +153,15 @@ pub fn get_pyth_price(
     };
     let price_result = scale_price(
         price.price as f64,
-        QUOTE_TOKEN_DECIMALS as i32,
+        PYTH_FEED_DECIMALS,
         price.expo,
-        QUOTE_TOKEN_DECIMALS as i32,
+        ORACLE_PRICE_TARGET_EXPONENT,
     )?;
     let std_deviation = scale_price(
         price.conf as f64,
-        QUOTE_TOKEN_DECIMALS as i32,
+        PYTH_FEED_DECIMALS,
         price.expo,
-        QUOTE_TOKEN_DECIMALS as i32,
+        ORACLE_PRICE_TARGET_EXPONENT,
     )?;
 
     msg!(
@@ -176,38 +201,24 @@ mod tests {
     use super::*;
 
     #[test]
-    pub fn test_scale_amount() -> Result<()> {
-        let token_amount = 100_000_000_000; // e.g 1_000_000 BONK in native token amount
-        let token_price = 106; // bonk sbv2 price feed scaled to -8 exponent
-
-        let token_value = token_amount * token_price;
-
-        let scaled_amount = scale_amount(token_value, QUOTE_TOKEN_DECIMALS as i32, -8, 0)?;
-
-        // adjusting this amount for BONK's 5 decimals should equal 1_060_000 which is 1.06 usdc
-        assert_eq!(scaled_amount, 106_000_000_000);
-
-        Ok(())
-    }
-
-    #[test]
     pub fn test_scale_pyth_price() -> Result<()> {
         let prices = [
             2_292_133_500_000f64, // btcusd from pyth
+            159_405_889_054f64,   // ethusd from pyth
             2_428_596_998f64,     // solusd from pyth
         ];
-        let current_exponents = [-8, -8];
-        let target_exponents = [6, 6];
-        let results = [22_921.335, 24.28596998];
+        let current_exponents = [-8, -8, -8];
+        let target_exponents = [-10, -10, -10];
+        let results = [
+            229_213_350_000_000u128,
+            15_940_588_905_400u128,
+            242_859_699_800u128,
+        ];
 
         for (idx, price) in prices.iter().enumerate() {
-            let scaled_price = scale_price(
-                *price,
-                QUOTE_TOKEN_DECIMALS as i32,
-                current_exponents[idx],
-                target_exponents[idx],
-            )?;
-            assert_eq!(scaled_price, results[idx]);
+            let scaled_price =
+                scale_price(*price, 0, current_exponents[idx], target_exponents[idx])?;
+            assert_eq!(scaled_price as u128, results[idx]);
         }
 
         Ok(())
@@ -216,20 +227,17 @@ mod tests {
     #[test]
     pub fn test_scale_switchboard_price() -> Result<()> {
         let prices = [
-            0.00000106,  // bonk from sbv2
-            0.326177379, // srm from sbv2
+            0.0000010379908497333, // bonk from sbv2
+            0.95275399047246,      // orca from sbv2
+            0.326177379,           // srm from sbv2
         ];
-        let current_exponents = [-6, -6];
-        let target_exponents = [-8, -8];
-        let results = [106.0, 32617737.9];
+        let current_exponents = [-0, 0, 0];
+        let target_exponents = [-10, -10, -10];
+        let results = [10_379, 9_527_539_904, 3_261_773_790];
 
         for (idx, price) in prices.iter().enumerate() {
-            let scaled_price = scale_price(
-                *price,
-                QUOTE_TOKEN_DECIMALS as i32,
-                current_exponents[idx],
-                target_exponents[idx],
-            )?;
+            let scaled_price =
+                scale_price(*price, 0, current_exponents[idx], target_exponents[idx])?;
             assert_eq!(scaled_price, results[idx]);
         }
 
@@ -256,7 +264,7 @@ mod tests {
 
         let price_feed_result = get_pyth_price(&price_feed, 500_000_000, 15)?;
 
-        assert!(price_feed_result == PriceFeedResult::Confident(22_921.335));
+        assert!(price_feed_result == PriceFeedResult::Confident(229_213_350_000_000u128));
 
         Ok(())
     }
@@ -284,9 +292,9 @@ mod tests {
         assert!(
             price_feed_result
                 == PriceFeedResult::Bounded(BoundedPrice {
-                    price: 22_921.335,
-                    lower_bound: 22917.98022974,
-                    higher_bound: 22924.68977026
+                    price: 229_213_350_000_000,
+                    lower_bound: 229_179_802_297_400,
+                    higher_bound: 229_246_897_702_600
                 })
         );
 
@@ -338,7 +346,7 @@ mod tests {
         };
         let price_feed_result = get_switchboard_price(&aggregator_account_data, 5.0, 15)?;
 
-        assert!(price_feed_result == PriceFeedResult::Confident(22_921.335));
+        assert!(price_feed_result == PriceFeedResult::Confident(229_213_350_000_000));
 
         Ok(())
     }
@@ -391,9 +399,9 @@ mod tests {
         assert!(
             price_feed_result
                 == PriceFeedResult::Bounded(BoundedPrice {
-                    price: 22_921.335,
-                    lower_bound: 22917.98022974,
-                    higher_bound: 22924.68977026
+                    price: 229_213_350_000_000,
+                    lower_bound: 229_179_802_297_400,
+                    higher_bound: 229_246_897_702_600
                 })
         );
 

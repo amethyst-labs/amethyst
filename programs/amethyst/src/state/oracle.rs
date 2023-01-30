@@ -4,7 +4,7 @@ use jet_proto_proc_macros::assert_size;
 #[derive(Debug, PartialEq)]
 pub enum PriceFeedResult {
     /// Price is within the maximum confidence interval threshold.
-    Confident(f64),
+    Confident(u128),
     /// The maximum confidence interval thresholds were exceeded, thus price is bounded.
     Bounded(BoundedPrice),
 }
@@ -12,11 +12,11 @@ pub enum PriceFeedResult {
 #[derive(Debug, PartialEq)]
 pub struct BoundedPrice {
     /// The price.
-    pub price: f64,
+    pub price: u128,
     /// The lower bound price.
-    pub lower_bound: f64,
+    pub lower_bound: u128,
     /// The higher bound price.
-    pub higher_bound: f64,
+    pub higher_bound: u128,
 }
 
 #[assert_size(aligns, 40)]
